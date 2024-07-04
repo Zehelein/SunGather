@@ -85,7 +85,7 @@ copy config-example.yaml config.yaml
 ```
 Run SunGather:
 ```sh
-python3 sungather.py
+python3 inverter.py
 ```
 
 ### Docker
@@ -118,7 +118,7 @@ If you want to use the new Energy section in Home Assistant, follow the Home Ass
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ### Commandline Arguments
-usage: python3 sungather.py [options]
+usage: python3 inverter.py [options]
 
 Commandline arguments override any config file settings  
 **-c config.yaml** - Specify config file.  
@@ -129,7 +129,7 @@ Commandline arguments override any config file settings
 
 Example:  
 ```sh
-python3 sungather.py -c /full/path/config.yaml
+python3 inverter.py -c /full/path/config.yaml
 ```
 
 ### Exports

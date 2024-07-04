@@ -1,0 +1,227 @@
+version:  0.2.3
+vendor: Sungrow
+#
+# die meisten register mit einem Offset von + 1
+#
+registers:
+  - read:
+### Serialnumber / hier stimmt die Länge nicht
+### SRN ist 12 stellig - zurück kommen nur 11 (eine fehlt)
+    - name: "serial_number"
+      level: 2
+      address: 21201
+      datatype: "UTF-8"
+### Date and Time - diese Register müssen definiert sein
+    - name: "year"
+      level: 2
+      address: 21224
+      datatype: "U16"
+      unit: "YYYY"
+    - name: "month"
+      level: 2
+      address: 21225
+      datatype: "U16"
+      unit: "MM"
+    - name: "day"
+      level: 2
+      address: 21226
+      datatype: "U16"
+    - name: "hour"
+      level: 2
+      address: 21227
+      datatype: "U16"
+    - name: "minute"
+      level: 2
+      address: 21228
+      datatype: "U16"
+    - name: "second"
+      level: 2
+      address: 21229
+      datatype: "U16"
+
+    # Ausgangsspannung - in der Regel um die 230 V
+    - name: "Rated_Voltage"
+      level: 2
+      address: 21262
+      datatype: "U16"
+      unit: "V"
+    #
+    - name: "WorkMode"
+      level: 2
+      address: 21263
+      datatype: "U16"
+      datarange:
+        - response: 0x00
+          value: "Netzwerk"
+        - response: 0x02
+          value: "PnP"
+        - response: 0x06
+          value: "EMS"
+    # Ladestation bereit/nicht bereit
+    - name: "Charger_Status"
+      level: 2
+      address: 21268
+      datatype: "U16"
+      datarange:
+        - response: 0x00
+          value: "Disable"
+        - response: 0x01
+          value: "Enable"
+    # bisher abgegebene Ladeleistung gesamt
+    - name: "Total_Energy"
+      level: 2
+      address: 21300
+      datatype: "U32"
+      unit: "kWh"
+      accuracy: 0.001
+    # aktuelle Ladeleistung
+    # der einzelnen Phasen
+    - name: "Charging_Voltage_R"
+      level: 2
+      address: 21302
+      datatype: "U16"
+      unit: "V"
+      accuracy: 0.1
+    - name: "Charging_Current_R"
+      level: 2
+      address: 21303
+      datatype: "U16"
+      unit: "A"
+      accuracy: 0.1
+    - name: "Charging_Voltage_S"
+      level: 2
+      address: 21304
+      datatype: "U16"
+      unit: "V"
+      accuracy: 0.1
+    - name: "Charging_Current_S"
+      level: 2
+      address: 21305
+      datatype: "U16"
+      unit: "A"
+      accuracy: 0.1
+    - name: "Charging_Voltage_T"
+      level: 2
+      address: 21306
+      datatype: "U16"
+      unit: "V"
+      accuracy: 0.1
+    - name: "Charging_Current_T"
+      level: 2
+      address: 21307
+      datatype: "U16"
+      unit: "A"
+      accuracy: 0.1
+    # Ladeenergie der aktuellen Ladung
+    # Rückgabe in Watt/Stunde - umgerechnet auf kWh
+    - name: "Charging_Power"
+      level: 2
+      address: 21308
+      datatype: "U32"
+      unit: "kW"
+      accuracy: 0.001
+    # Ladeenergie seit Sart des aktuellen Ladevorgangs
+    # Rückgabeini Watt/Stunde - umgerechnet auf kWh
+    - name: "Charging_Engery"
+      level: 2
+      address: 21310
+      datatype: "U32"
+      unit: "kWh"
+      accuracy: 0.001
+    # Startmodus des Ladevorgangs
+    - name: "Start_Mode"
+      level: 2
+      address: 21314
+      datatype: "U16"
+      datarange:
+        - response: 0x01
+          value: "EMS"
+        - response: 0x02
+          value: "Card"
+    # Leistungsregelung
+    - name: "Power_Regulation"
+      level: 2
+      address: 21316
+      datatype: "U16"
+      datarange:
+        - response: 0x00
+          value: "forbidden"
+        - response: 0x01
+          value: "allowed"
+    # Status der Wallbox
+    - name: "Charging_Status"
+      level: 2
+      address: 21317
+      datatype: "U16"
+      datarange:
+        - response: 0x01
+          value: "Idle"
+        - response: 0x02
+          value: "Standby"
+        - response: 0x03
+          value: "Charching"
+        - response: 0x04
+          value: "Charching suspended (Wallbox)"
+        - response: 0x05
+          value: "Charching suspended (Car)"
+        - response: 0x06
+          value: "Charching comlete"
+        - response: 0x07
+          value: "Reserved"
+        - response: 0x08
+          value: "Disabled"
+        - response: 0x09
+          value: "Fault"
+    # Start der letzten Ladung / UNIX DateTime
+    - name: "Charge_Start_Time"
+      level: 2
+      address: 21318
+      datatype: "U32"
+    # Ende der letzten Ladung / UNIX DateTime
+    - name: "Charge_End__Time"
+      level: 2
+      address: 21320
+      datatype: "U32"
+
+    # Holdregister in READ
+    # Ausgangsstrom in A
+    # - name: "SetOutI"
+    #  level: 2
+    #  address: 21203
+    #  datatype: "U16"
+    #  unit: "A"
+    #  accuracy: 0.001
+    # ein || drei Phasenbetrieb
+    # besser aus den o.g. Registern Phase_x
+    - name: "PhaseSwitch"
+      level: 2
+    # laut Doku 21203(4)
+      address: 21207
+      datatype: "U16"
+#      datarange:
+#        - response: 0x00
+#          value: "3ph"
+#        - response: 0x01
+#          value: "1ph"
+
+  - hold:
+# ein Holdregister um die Fehlermeldung
+# zu unterdücken
+    - name: "Hold-Status"
+      level: 2
+      address: 21316
+      datatype: "U16"
+
+
+scan: # these have to be 1 less than the first register
+  - read:
+    - start: 21199
+      range: 80
+    - start: 21299
+      range: 75
+
+  - hold:
+    - start: 21199
+      range: 80
+    - start: 21299
+      range: 75

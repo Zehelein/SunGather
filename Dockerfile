@@ -23,4 +23,4 @@ COPY SunGather/config-example.yaml /config/config.yaml
 
 USER sungather
 
-CMD [ "/opt/virtualenv/bin/python", "sungather.py", "-c", "/config/config.yaml", "-l", "/logs/" ]
+CMD [ "/opt/virtualenv/bin/python", "inverter.py", "-c", "/config/config.yaml", "-l", "/logs/" ]

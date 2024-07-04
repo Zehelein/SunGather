@@ -13,7 +13,7 @@ import time
 
 def main():
     configfilename = 'config.yaml'
-    registersfilename = 'registers-sungrow.yaml'
+    registersfilename = 'registers-wallbox.yaml'
     logfolder = ''
 
     try:
@@ -26,7 +26,7 @@ def main():
         if opt == '-h':
             print(f'\nSunGather {__version__}')
             print(f'\nhttps://sungather.app')
-            print(f'usage: python3 sungather.py [options]')
+            print(f'usage: python3 wallbox.py [options]')
             print(f'\nCommandling arguments override any config file settings')
             print(f'Options and arguments:')
             print(f'-c config.yaml             : Specify config file.')
@@ -36,7 +36,7 @@ def main():
             print(f'--runonce                  : Run once then exit')
             print(f'-h                         : print this help message and exit (also --help)')
             print(f'\nExample:')
-            print(f'python3 sungather.py -c /full/path/config.yaml\n')
+            print(f'python3 wallbox.py -c /full/path/config.yaml\n')
             sys.exit()
         elif opt == '-c':
             configfilename = arg
@@ -67,9 +67,9 @@ def main():
     except Exception as err:
         logging.error(f"Failed: Loading config: {configfilename} \n\t\t\t     {err}")
         sys.exit(1)
-    if not configfile.get('inverter'):
-        logging.error(f"Failed Loading config, missing Inverter settings")
-        sys.exit(f"Failed Loading config, missing Inverter settings")   
+    if not configfile.get('wallbox'):
+        logging.error(f"Failed Loading config, missing wallbox settings")
+        sys.exit(f"Failed Loading config, missing wallbox settings")   
 
     try:
         registersfile = yaml.safe_load(open(registersfilename, encoding="utf-8"))
@@ -79,33 +79,33 @@ def main():
         logging.error(f"Failed: Loading registers: {registersfilename}  {err}")
         sys.exit(f"Failed: Loading registers: {registersfilename} {err}")
    
-    config_inverter = {
-        "host": configfile['inverter'].get('host',None),
-        "port": configfile['inverter'].get('port',502),
-        "timeout": configfile['inverter'].get('timeout',10),
-        "retries": configfile['inverter'].get('retries',3),
-        "slave": configfile['inverter'].get('slave',0x01),
-        "scan_interval": configfile['inverter'].get('scan_interval',30),
-        "connection": configfile['inverter'].get('connection',"modbus"),
-        "model": configfile['inverter'].get('model',None),
-        "smart_meter": configfile['inverter'].get('smart_meter',False),
-        "use_local_time": configfile['inverter'].get('use_local_time',False),
-        "log_console": configfile['inverter'].get('log_console','WARNING'),
-        "log_file": configfile['inverter'].get('log_file','OFF'),
-        "level": configfile['inverter'].get('level',1)
+    config_wallbox = {
+        "host": configfile['wallbox'].get('host',None),
+        "port": configfile['wallbox'].get('port',502),
+        "timeout": configfile['wallbox'].get('timeout',10),
+        "retries": configfile['wallbox'].get('retries',3),
+        "slave": configfile['wallbox'].get('slave',0x02),
+        "scan_interval": configfile['wallbox'].get('scan_interval',30),
+        "connection": configfile['wallbox'].get('connection',"modbus"),
+        "model": configfile['wallbox'].get('model',None),
+        "smart_meter": configfile['wallbox'].get('smart_meter',False),
+        "use_local_time": configfile['wallbox'].get('use_local_time',False),
+        "log_console": configfile['wallbox'].get('log_console','WARNING'),
+        "log_file": configfile['wallbox'].get('log_file','OFF'),
+        "level": configfile['wallbox'].get('level',1)
     }
 
     if 'loglevel' in locals():
         logger.handlers[0].setLevel(loglevel)
     else:
-        logger.handlers[0].setLevel(config_inverter['log_console'])
+        logger.handlers[0].setLevel(config_wallbox['log_console'])
 
-    if not config_inverter['log_file'] == "OFF":
-        if config_inverter['log_file'] == "DEBUG" or config_inverter['log_file'] == "INFO" or config_inverter['log_file'] == "WARNING" or config_inverter['log_file'] == "ERROR":
+    if not config_wallbox['log_file'] == "OFF":
+        if config_wallbox['log_file'] == "DEBUG" or config_wallbox['log_file'] == "INFO" or config_wallbox['log_file'] == "WARNING" or config_wallbox['log_file'] == "ERROR":
             logfile = logfolder + "SunGather.log"
             fh = logging.handlers.RotatingFileHandler(logfile, mode='w', encoding='utf-8', maxBytes=10485760, backupCount=10) # Log 10mb files, 10 x files = 100mb
             fh.formatter = logger.handlers[0].formatter
-            fh.setLevel(config_inverter['log_file'])
+            fh.setLevel(config_wallbox['log_file'])
             logger.addHandler(fh)
         else:
             logging.warning(f"log_file: Valid options are: DEBUG, INFO, WARNING, ERROR and OFF")
@@ -114,56 +114,56 @@ def main():
     if logger.handlers.__len__() == 3:
         logging.info(f"Logging to file set to: {logging.getLevelName(logger.handlers[2].level)}")
     
-    logging.debug(f'Inverter Config Loaded: {config_inverter}')    
+    logging.debug(f'Wallbox Config Loaded: {config_wallbox}')    
 
-    if config_inverter.get('host'):
-        inverter = SungrowClient.SungrowClient(config_inverter)
+    if config_wallbox.get('host'):
+        wallbox = SungrowClient.SungrowClient(config_wallbox)
     else:
         logging.error(f"Error: host option in config is required")
         sys.exit("Error: host option in config is required")
 
-    if not inverter.checkConnection():
-        logging.error(f"Error: Connection to inverter failed: {config_inverter.get('host')}:{config_inverter.get('port')}")
-        sys.exit(f"Error: Connection to inverter failed: {config_inverter.get('host')}:{config_inverter.get('port')}")       
+    if not wallbox.checkConnection():
+        logging.error(f"Error: Connection to wallbox failed: {config_wallbox.get('host')}:{config_wallbox.get('port')}")
+        sys.exit(f"Error: Connection to wallbox failed: {config_wallbox.get('host')}:{config_wallbox.get('port')}")       
 
-    inverter.configure_registers(registersfile)
-    if not inverter.inverter_config['connection'] == "http": inverter.close()
+    wallbox.configure_registers(registersfile)
+    if not wallbox.inverter_config['connection'] == "http": wallbox.close()
     
-    # Now we know the inverter is working, lets load the exports
+    # Now we know the wallbox is working, lets load the exports
     exports = []
     if configfile.get('exports'):
         for export in configfile.get('exports'):
             try:
                 if export.get('enabled', False):
                     export_load = importlib.import_module("exports." + export.get('name'))
-                    logging.info(f"Loading Export: exports\{export.get('name')}")
+                    logging.info(f"Loading Export: exports {export.get('name')}")
                     exports.append(getattr(export_load, "export_" + export.get('name'))())
-                    retval = exports[-1].configure(export, inverter)
+                    retval = exports[-1].configure(export, wallbox)
             except Exception as err:
                 logging.error(f"Failed loading export: {err}" +
                             f"\n\t\t\t     Please make sure {export.get('name')}.py exists in the exports folder")
 
-    scan_interval = config_inverter.get('scan_interval')
+    scan_interval = config_wallbox.get('scan_interval')
 
     # Core polling loop
     while True:
         loop_start = time.perf_counter()
 
-        inverter.checkConnection()
+        wallbox.checkConnection()
 
-        # Scrape the inverter
+        # Scrape the wallbox
         try:
-            success = inverter.scrape()
+            success = wallbox.scrape()
         except Exception as e:
             logging.exception(f"Failed to scrape: {e}")
             success = False
 
         if(success):
             for export in exports:
-                export.publish(inverter)
-            if not inverter.inverter_config['connection'] == "http": inverter.close()
+                export.publish(wallbox)
+            if not wallbox.inverter_config['connection'] == "http": wallbox.close()
         else:
-            inverter.disconnect()
+            wallbox.disconnect()
             logging.warning(f"Data collection failed, skipped exporting data. Retying in {scan_interval} secs")
 
         loop_end = time.perf_counter()
